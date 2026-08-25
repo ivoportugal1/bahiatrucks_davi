@@ -1063,11 +1063,11 @@ function ConfiguracoesPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm text-gray-400 mb-2">Nome da Empresa</label>
-                <input type="text" defaultValue="Café do João" className="w-full rounded-lg px-4 py-2 focus:outline-none" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)', border: `1px solid ${moss.border}`, color: 'white', focusBorderColor: moss.primary}} />
+                <input type="text" placeholder="Seu nome da empresa" className="w-full rounded-lg px-4 py-2 focus:outline-none" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)', border: `1px solid ${moss.border}`, color: 'white'}} />
               </div>
               <div>
                 <label className="block text-sm text-gray-400 mb-2">Email</label>
-                <input type="email" defaultValue="contato@cafejoao.com" className="w-full rounded-lg px-4 py-2 focus:outline-none" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)', border: `1px solid ${moss.border}`, color: 'white'}} />
+                <input type="email" placeholder="seu@email.com" className="w-full rounded-lg px-4 py-2 focus:outline-none" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)', border: `1px solid ${moss.border}`, color: 'white'}} />
               </div>
             </div>
           </div>
@@ -1086,10 +1086,9 @@ function ConfiguracoesPage() {
             <div className="rounded-lg p-4" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)'}}>
               <div className="flex justify-between items-center">
                 <div>
-                  <div className="font-semibold">Plano Pro</div>
-                  <div className="text-sm text-gray-400">R$ 79,90/mês</div>
+                  <div className="font-semibold">Plano Gratuito</div>
+                  <div className="text-sm text-gray-400">Sem limite de clientes</div>
                 </div>
-                <button className="text-sm" style={{color: moss.primary}}>Gerenciar Plano</button>
               </div>
             </div>
           </div>
