@@ -86,7 +86,8 @@ export default function Dashboard() {
       {/* Mobile Menu - Visible on mobile only */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 md:hidden z-30" style={{backgroundColor: 'rgba(0, 0, 0, 0.5)'}} onClick={() => setMobileMenuOpen(false)}>
-          <nav className="flex flex-col p-4 space-y-2" style={{backgroundColor: 'rgba(31, 63, 53, 0.95)', borderRight: `1px solid ${moss.border}`}}>
+          <nav className="flex flex-col p-4 space-y-2 max-h-screen overflow-y-auto" style={{backgroundColor: 'rgba(31, 63, 53, 0.95)', borderRight: `1px solid ${moss.border}`}}>
+            <div className="px-4 py-3 font-bold text-lg mb-2" style={{color: moss.primary}}>Fidelizarei</div>
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = activePage === item.id;
