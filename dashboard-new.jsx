@@ -13,6 +13,7 @@ const moss = {
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activePage, setActivePage] = useState('resumo');
 
   const menuItems = [
@@ -40,8 +41,8 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen text-white flex" style={{background: moss.bg}}>
-      {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} transition-all duration-300 flex flex-col`} style={{backgroundColor: 'rgba(31, 63, 53, 0.8)', borderRight: `1px solid ${moss.border}`}}>
+      {/* Sidebar - Hidden on mobile */}
+      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} transition-all duration-300 flex flex-col hidden md:flex`} style={{backgroundColor: 'rgba(31, 63, 53, 0.8)', borderRight: `1px solid ${moss.border}`}}>
         <div className="p-6 flex items-center justify-between">
           {sidebarOpen && <div className="text-xl font-bold" style={{color: moss.primary}}>Fidelizarei</div>}
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded hover:opacity-75">
@@ -82,11 +83,54 @@ export default function Dashboard() {
         )}
       </aside>
 
+      {/* Mobile Menu - Visible on mobile only */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 md:hidden z-30" style={{backgroundColor: 'rgba(0, 0, 0, 0.5)'}} onClick={() => setMobileMenuOpen(false)}>
+          <nav className="flex flex-col p-4 space-y-2" style={{backgroundColor: 'rgba(31, 63, 53, 0.95)', borderRight: `1px solid ${moss.border}`}}>
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activePage === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActivePage(item.id);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition"
+                  style={{
+                    backgroundColor: isActive ? `${moss.primary}20` : 'transparent',
+                    borderColor: isActive ? moss.primary : 'transparent',
+                    borderWidth: '1px',
+                    color: isActive ? moss.primary : '#9ca3af',
+                  }}
+                >
+                  <Icon size={20} />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:opacity-75 mt-4" style={{color: '#9ca3af', borderTop: `1px solid ${moss.border}`}}>
+              <LogOut size={20} />
+              <span>Sair</span>
+            </button>
+          </nav>
+        </div>
+      )}
+
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto w-full">
         {/* Top Bar */}
-        <div className="px-8 py-4 flex justify-between items-center sticky top-0 z-40" style={{backgroundColor: 'rgba(15, 23, 42, 0.7)', borderBottom: `1px solid ${moss.border}`}}>
-          <h1 className="text-2xl font-bold capitalize">{activePage}</h1>
+        <div className="px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-40" style={{backgroundColor: 'rgba(15, 23, 42, 0.7)', borderBottom: `1px solid ${moss.border}`}}>
+          <div className="flex items-center gap-2 md:gap-0">
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 rounded md:hidden mr-2"
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+            <h1 className="text-xl md:text-2xl font-bold capitalize">{activePage}</h1>
+          </div>
           <div className="flex items-center gap-4">
             <div className="relative hidden md:block">
               <Search size={18} className="absolute left-3 top-3 text-gray-500" />
@@ -99,7 +143,7 @@ export default function Dashboard() {
         </div>
 
         {/* Content Area */}
-        <div className="p-8">
+        <div className="p-4 md:p-8">
           {renderContent()}
         </div>
       </main>
