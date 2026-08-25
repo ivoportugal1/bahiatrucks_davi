@@ -944,48 +944,107 @@ function RecompensasPage() {
 
 // RELATORIOS PAGE
 function RelatoriosPage() {
+  const [dados, setDados] = useState({
+    totalClientes: 0,
+    totalProgramas: 0,
+    totalQRCodes: 0,
+    qrCodesUtilizados: 0,
+    totalRecompensas: 0,
+    recompensasResgatadas: 0
+  });
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    carregarDadosRelatorio();
+  }, []);
+
+  const carregarDadosRelatorio = async () => {
+    try {
+      setCarregando(true);
+      const [clientes, programas, qrcodes, recompensas] = await Promise.all([
+        apiClientes.listar(),
+        apiProgramas.listar(),
+        apiQRCodes.listar(),
+        apiRecompensas.listar()
+      ]);
+
+      const qrUtilizados = (qrcodes.qrCodes || []).filter(qr => qr.status === 'utilizado').length;
+      const recompResgatadas = (recompensas.recompensas || []).reduce((sum, r) => sum + (r.quantidadeUtilizada || 0), 0);
+
+      setDados({
+        totalClientes: clientes.clientes?.length || 0,
+        totalProgramas: programas.programas?.length || 0,
+        totalQRCodes: qrcodes.qrCodes?.length || 0,
+        qrCodesUtilizados: qrUtilizados,
+        totalRecompensas: recompensas.recompensas?.length || 0,
+        recompensasResgatadas: recompResgatadas
+      });
+    } catch (err) {
+      console.error('Erro ao carregar relatório:', err);
+    }
+    setCarregando(false);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-semibold mb-2">Relatórios</h2>
-          <p className="text-gray-400">Analise dados e gere relatórios</p>
+          <p className="text-gray-400">Analise dados e métricas</p>
         </div>
-        <button className="px-6 py-2 rounded-lg font-semibold flex items-center gap-2 text-white" style={{background: `linear-gradient(to right, ${moss.primary}, ${moss.secondary})`}}>
-          <Download size={20} />
-          Exportar
-        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="rounded-xl p-6" style={{backgroundColor: 'rgba(45, 90, 74, 0.3)', border: `1px solid ${moss.border}`}}>
-          <h3 className="text-lg font-semibold mb-4">Clientes por Período</h3>
-          <div className="h-40 flex items-end justify-between gap-2">
-            {[45, 52, 48, 61, 55, 68, 72].map((h, i) => (
-              <div key={i} className="flex-1 rounded-t-lg" style={{height: `${h}%`, background: `linear-gradient(to top, ${moss.primary}, ${moss.accent})`}}></div>
-            ))}
-          </div>
-        </div>
-
-        <div className="rounded-xl p-6" style={{backgroundColor: 'rgba(45, 90, 74, 0.3)', border: `1px solid ${moss.border}`}}>
-          <h3 className="text-lg font-semibold mb-4">Resgates por Mês</h3>
-          <div className="space-y-3">
+      {carregando ? (
+        <div style={{textAlign: 'center', color: '#9ca3af'}}>Carregando relatório...</div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-              { month: 'Janeiro', count: 234 },
-              { month: 'Fevereiro', count: 289 },
-              { month: 'Março', count: 312 },
-            ].map((item, i) => (
-              <div key={i} className="flex items-center justify-between">
-                <span className="text-gray-400">{item.month}</span>
-                <div className="w-48 rounded-full h-2 overflow-hidden" style={{backgroundColor: 'rgba(45, 90, 74, 0.5)'}}>
-                  <div style={{width: `${(item.count / 312) * 100}%`, background: `linear-gradient(to right, ${moss.primary}, ${moss.secondary})`, height: '100%'}}></div>
-                </div>
-                <span className="font-semibold text-right w-12">{item.count}</span>
+              { label: 'Total de Clientes', value: dados.totalClientes },
+              { label: 'Programas Ativos', value: dados.totalProgramas },
+              { label: 'QR Codes Gerados', value: dados.totalQRCodes },
+              { label: 'QR Codes Utilizados', value: dados.qrCodesUtilizados },
+              { label: 'Recompensas Criadas', value: dados.totalRecompensas },
+              { label: 'Recompensas Resgatadas', value: dados.recompensasResgatadas },
+            ].map((stat, i) => (
+              <div key={i} className="rounded-xl p-6 text-white" style={{background: `linear-gradient(to bottom right, ${moss.primary}, ${moss.secondary})`}}>
+                <div className="text-3xl font-bold mb-2">{stat.value}</div>
+                <div className="text-sm opacity-90">{stat.label}</div>
               </div>
             ))}
           </div>
-        </div>
-      </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="rounded-xl p-6" style={{backgroundColor: 'rgba(45, 90, 74, 0.3)', border: `1px solid ${moss.border}`}}>
+              <h3 className="text-lg font-semibold mb-4">Taxa de Utilização de QR Codes</h3>
+              <div className="text-center">
+                <div className="text-4xl font-bold" style={{color: moss.primary}}>
+                  {dados.totalQRCodes > 0 ? Math.round((dados.qrCodesUtilizados / dados.totalQRCodes) * 100) : 0}%
+                </div>
+                <p className="text-gray-400 mt-2">{dados.qrCodesUtilizados} de {dados.totalQRCodes} utilizados</p>
+              </div>
+            </div>
+
+            <div className="rounded-xl p-6" style={{backgroundColor: 'rgba(45, 90, 74, 0.3)', border: `1px solid ${moss.border}`}}>
+              <h3 className="text-lg font-semibold mb-4">Resumo Rápido</h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Clientes Ativos</span>
+                  <span className="font-semibold">{dados.totalClientes}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">QR Codes Disponíveis</span>
+                  <span className="font-semibold">{dados.totalQRCodes - dados.qrCodesUtilizados}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Recompensas Resgatadas</span>
+                  <span className="font-semibold">{dados.recompensasResgatadas}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
