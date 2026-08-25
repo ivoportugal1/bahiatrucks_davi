@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, LogOut, Settings, BarChart3, Users, Gift, QrCode, Zap, TrendingUp, Download, Plus, Search, Eye, Edit2, Trash2, Home } from 'lucide-react';
 import { programas as apiProgramas, clientes as apiClientes, qrCodes as apiQRCodes, recompensas as apiRecompensas } from './api';
+import QRCodeModal from './QRCodeModal';
 
 const moss = {
   bg: 'linear-gradient(to bottom right, rgb(15, 23, 42), rgb(26, 58, 50), rgb(15, 23, 42))',
@@ -563,6 +564,7 @@ function QRCodesPage() {
   const [stats, setStats] = useState({ total: 0, utilizados: 0, disponiveis: 0 });
   const [carregando, setCarregando] = useState(true);
   const [mostraForm, setMostraForm] = useState(false);
+  const [selectedQR, setSelectedQR] = useState(null);
   const [form, setForm] = useState({
     programaId: '',
     quantidade: 100
@@ -676,16 +678,31 @@ function QRCodesPage() {
               <div style={{textAlign: 'center', color: '#9ca3af', padding: '20px'}}>Nenhum QR Code gerado ainda</div>
             ) : (
               lista.map((qr, i) => (
-                <div key={i} className="flex justify-between items-center p-3 rounded text-sm" style={{backgroundColor: 'rgba(0, 0, 0, 0.2)'}}>
+                <div
+                  key={i}
+                  onClick={() => setSelectedQR(qr)}
+                  className="flex justify-between items-center p-3 rounded text-sm cursor-pointer hover:bg-opacity-40 transition"
+                  style={{backgroundColor: 'rgba(0, 0, 0, 0.2)'}}
+                >
                   <span className="font-mono text-gray-300 truncate">{qr.codigo}</span>
-                  <span className="text-xs" style={{color: qr.status === 'utilizado' ? moss.primary : '#9ca3af'}}>
-                    {qr.status === 'utilizado' ? '✓ Utilizado' : '○ Disponível'}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs" style={{color: qr.status === 'utilizado' ? moss.primary : '#9ca3af'}}>
+                      {qr.status === 'utilizado' ? '✓ Utilizado' : '○ Disponível'}
+                    </span>
+                    <Eye size={16} style={{color: moss.primary}} />
+                  </div>
                 </div>
               ))
             )}
           </div>
         </div>
+      )}
+
+      {selectedQR && (
+        <QRCodeModal
+          qrCode={selectedQR}
+          onClose={() => setSelectedQR(null)}
+        />
       )}
     </div>
   );
