@@ -1,5 +1,5 @@
 // Configuração da API
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://bahiatrucks-davi.onrender.com/api';
 
 // Armazenar token no localStorage
 const setToken = (token) => {
