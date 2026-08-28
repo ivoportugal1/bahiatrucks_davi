@@ -146,6 +146,57 @@ exports.escanear = async (req, res) => {
   }
 };
 
+// Validar QR Code e obter informações públicas
+exports.validarPublico = async (req, res) => {
+  try {
+    const { codigo } = req.params;
+
+    if (!codigo) {
+      return res.status(400).json({
+        erro: 'Código do QR Code é obrigatório'
+      });
+    }
+
+    const qrCode = await QRCode.findOne({ codigo }).populate('programaId', 'nome emoji descricao');
+
+    if (!qrCode) {
+      return res.status(404).json({
+        erro: 'QR Code não encontrado ou inválido'
+      });
+    }
+
+    let cliente = null;
+    if (qrCode.clienteId) {
+      cliente = await Cliente.findById(qrCode.clienteId);
+    }
+
+    const resposta = {
+      programa: qrCode.programaId ? {
+        nome: qrCode.programaId.nome,
+        emoji: qrCode.programaId.emoji,
+        descricao: qrCode.programaId.descricao
+      } : null,
+      status: qrCode.status,
+      cliente: cliente ? {
+        nome: cliente.nome,
+        pontos: cliente.programasParticipantes.find(p => p.programaId.toString() === qrCode.programaId._id.toString())?.pontos || 0,
+        totalCompras: cliente.totalCompras
+      } : {
+        nome: 'Cliente não registrado',
+        pontos: 0,
+        totalCompras: 0
+      }
+    };
+
+    res.json(resposta);
+  } catch (error) {
+    console.error('Erro ao validar QR Code:', error);
+    res.status(500).json({
+      erro: error.message || 'Erro ao validar QR Code'
+    });
+  }
+};
+
 // Obter estatísticas de QR Codes
 exports.estatisticas = async (req, res) => {
   try {

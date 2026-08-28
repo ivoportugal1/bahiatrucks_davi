@@ -3,6 +3,10 @@ const router = express.Router();
 const qrCodeController = require('../controllers/qrCodeController');
 const authMiddleware = require('../middlewares/auth');
 
+// Rotas públicas (sem autenticação)
+// GET /api/qrcodes/validar/:codigo - Validar e obter info do QR Code
+router.get('/validar/:codigo', qrCodeController.validarPublico);
+
 // Rotas protegidas (precisam de autenticação)
 router.use(authMiddleware);
 
