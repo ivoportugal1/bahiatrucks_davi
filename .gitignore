@@ -8,3 +8,4 @@ dist
 npm-debug.log*
 .vite
 .claude
+backend/google-wallet-key.json
