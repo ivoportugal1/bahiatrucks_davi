@@ -77,8 +77,7 @@ exports.gerarCartao = async (req, res) => {
           uri: 'https://bahiatrucks-davi.vercel.app/logo.png'
         }
       },
-      rewardsTierLabel: 'Pontos',
-      reviewStatus: 'UNDER_REVIEW'
+      rewardsTierLabel: 'Pontos'
     };
 
     try {
@@ -255,8 +254,7 @@ exports.gerarLinkQRCode = async (req, res) => {
           uri: 'https://bahiatrucks-davi.vercel.app/logo.png'
         }
       },
-      rewardsTierLabel: 'Pontos',
-      reviewStatus: 'UNDER_REVIEW'
+      rewardsTierLabel: 'Pontos'
     };
 
     try {
