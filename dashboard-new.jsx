@@ -208,70 +208,40 @@ function ResumoPage() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Evolution Chart */}
+        {/* Stats Info */}
         <div className="rounded-xl p-6" style={{backgroundColor: 'rgba(45, 90, 74, 0.3)', border: `1px solid ${moss.border}`}}>
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-semibold">Evolução de Pontos</h3>
-            <select className="rounded px-3 py-1 text-sm focus:outline-none" style={{backgroundColor: 'rgba(45, 90, 74, 0.5)', border: `1px solid ${moss.border}`, color: 'white'}}>
-              <option>Últimos 30 dias</option>
-              <option>Últimos 90 dias</option>
-              <option>Últimos 6 meses</option>
-            </select>
-          </div>
-          <div className="h-64 flex items-end justify-between gap-2">
-            {[65, 72, 58, 81, 76, 88, 95, 82, 91, 87, 94, 89].map((h, i) => (
-              <div
-                key={i}
-                className="flex-1 rounded-t-lg hover:opacity-80 transition"
-                style={{height: `${h}%`, background: `linear-gradient(to top, ${moss.primary}, ${moss.accent})`}}
-              ></div>
-            ))}
-          </div>
-          <div className="flex justify-between text-xs text-gray-400 mt-4">
-            <span>01/05</span>
-            <span>31/05</span>
+          <h3 className="text-lg font-semibold mb-6">Atividades Recentes</h3>
+          <div className="space-y-4 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400">Clientes cadastrados hoje</span>
+              <span className="font-semibold">{dados.clientes || 0}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400">QR Codes gerados hoje</span>
+              <span className="font-semibold">{dados.qrcodes || 0}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400">Recompensas resgatadas</span>
+              <span className="font-semibold">{dados.recompensas || 0}</span>
+            </div>
           </div>
         </div>
 
-        {/* Distribution */}
+        {/* Quick Stats */}
         <div className="rounded-xl p-6" style={{backgroundColor: 'rgba(45, 90, 74, 0.3)', border: `1px solid ${moss.border}`}}>
-          <h3 className="text-lg font-semibold mb-6">Distribuição de Pontos</h3>
-          <div className="flex items-center justify-center h-64">
-            <div className="relative w-40 h-40">
-              <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                <circle cx="50" cy="50" r="40" fill="none" stroke={moss.primary} strokeWidth="10" strokeDasharray="94.25 314" />
-                <circle cx="50" cy="50" r="40" fill="none" stroke={moss.secondary} strokeWidth="10" strokeDasharray="62.8 314" strokeDashoffset="-94.25" />
-                <circle cx="50" cy="50" r="40" fill="none" stroke={moss.accent} strokeWidth="10" strokeDasharray="47.1 314" strokeDashoffset="-157.05" />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-2xl font-bold">89k</div>
-                  <div className="text-xs text-gray-400">total</div>
-                </div>
-              </div>
+          <h3 className="text-lg font-semibold mb-6">Status da Plataforma</h3>
+          <div className="space-y-3 text-sm">
+            <div className="flex items-center justify-between p-2 rounded bg-green-900/20">
+              <span className="text-gray-300">Sistema</span>
+              <span className="text-green-500 font-semibold">🟢 Online</span>
             </div>
-          </div>
-          <div className="space-y-2 text-sm mt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{backgroundColor: moss.primary}}></div>
-                <span>Compras</span>
-              </div>
-              <span className="font-semibold">60%</span>
+            <div className="flex items-center justify-between p-2 rounded bg-green-900/20">
+              <span className="text-gray-300">Banco de Dados</span>
+              <span className="text-green-500 font-semibold">🟢 Conectado</span>
             </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{backgroundColor: moss.secondary}}></div>
-                <span>Bônus</span>
-              </div>
-              <span className="font-semibold">25%</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{backgroundColor: moss.accent}}></div>
-                <span>Indicações</span>
-              </div>
-              <span className="font-semibold">15%</span>
+            <div className="flex items-center justify-between p-2 rounded bg-green-900/20">
+              <span className="text-gray-300">API</span>
+              <span className="text-green-500 font-semibold">🟢 Respondendo</span>
             </div>
           </div>
         </div>
