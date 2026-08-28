@@ -197,6 +197,112 @@ exports.validarPublico = async (req, res) => {
   }
 };
 
+// Escanear QR Code e registrar cliente (público)
+exports.escanearPublico = async (req, res) => {
+  try {
+    const { codigo, nome, email } = req.body;
+
+    if (!codigo || !nome || !email) {
+      return res.status(400).json({
+        erro: 'código, nome e email são obrigatórios'
+      });
+    }
+
+    const qrCode = await QRCode.findOne({ codigo }).populate('programaId');
+
+    if (!qrCode) {
+      return res.status(404).json({
+        erro: 'QR Code não encontrado'
+      });
+    }
+
+    if (qrCode.status !== 'disponivel') {
+      return res.status(400).json({
+        erro: `QR Code já foi ${qrCode.status}`
+      });
+    }
+
+    // Buscar ou criar cliente
+    let cliente = await Cliente.findOne({ email });
+
+    if (!cliente) {
+      cliente = new Cliente({
+        nome,
+        email,
+        telefone: '',
+        programasParticipantes: [
+          {
+            programaId: qrCode.programaId._id,
+            pontos: 0,
+            comprasRealizadas: 0
+          }
+        ]
+      });
+    } else {
+      // Se cliente já existe, adicionar programa se não tiver
+      const jaTemPrograma = cliente.programasParticipantes.find(
+        p => p.programaId.toString() === qrCode.programaId._id.toString()
+      );
+
+      if (!jaTemPrograma) {
+        cliente.programasParticipantes.push({
+          programaId: qrCode.programaId._id,
+          pontos: 0,
+          comprasRealizadas: 0
+        });
+      }
+    }
+
+    // Marcar QR code como utilizado
+    qrCode.status = 'utilizado';
+    qrCode.clienteId = cliente._id;
+    qrCode.dataUtilizado = new Date();
+    await qrCode.save();
+
+    // Adicionar pontos ao cliente
+    const programa = await Programa.findById(qrCode.programaId);
+    const participacao = cliente.programasParticipantes.find(
+      p => p.programaId.toString() === qrCode.programaId.toString()
+    );
+
+    if (participacao) {
+      participacao.pontos += qrCode.pontosAtribuidos || 10; // 10 pontos padrão se não especificado
+      participacao.comprasRealizadas += 1;
+      cliente.totalPontos += qrCode.pontosAtribuidos || 10;
+      cliente.totalCompras += 1;
+      cliente.ultimaCompra = new Date();
+    }
+
+    await cliente.save();
+
+    if (programa) {
+      programa.pontosEmitidos += qrCode.pontosAtribuidos || 10;
+      await programa.save();
+    }
+
+    const pontosGanhos = qrCode.pontosAtribuidos || 10;
+
+    res.json({
+      mensagem: 'QR Code escaneado com sucesso!',
+      cliente: {
+        nome: cliente.nome,
+        pontos: participacao?.pontos || 0,
+        totalCompras: cliente.totalCompras
+      },
+      pontosGanhos,
+      programa: {
+        nome: programa?.nome,
+        emoji: programa?.emoji
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao escanear QR Code público:', error);
+    res.status(500).json({
+      erro: error.message || 'Erro ao escanear QR Code'
+    });
+  }
+};
+
 // Obter estatísticas de QR Codes
 exports.estatisticas = async (req, res) => {
   try {

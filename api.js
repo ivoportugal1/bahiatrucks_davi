@@ -194,6 +194,15 @@ export const qrCodes = {
     return await response.json();
   },
 
+  escanearPublico: async (codigo, nome, email) => {
+    const response = await fetch(`${API_URL}/qrcodes/escanear-publico`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ codigo, nome, email })
+    });
+    return await response.json();
+  },
+
   estatisticas: async (programaId = null) => {
     let url = `${API_URL}/qrcodes/estatisticas`;
     if (programaId) url += `?programaId=${programaId}`;

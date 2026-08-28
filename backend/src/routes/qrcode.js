@@ -7,6 +7,9 @@ const authMiddleware = require('../middlewares/auth');
 // GET /api/qrcodes/validar/:codigo - Validar e obter info do QR Code
 router.get('/validar/:codigo', qrCodeController.validarPublico);
 
+// POST /api/qrcodes/escanear-publico - Escanear QR Code e registrar cliente
+router.post('/escanear-publico', qrCodeController.escanearPublico);
+
 // Rotas protegidas (precisam de autenticação)
 router.use(authMiddleware);
 
