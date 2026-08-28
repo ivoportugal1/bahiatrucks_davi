@@ -38,7 +38,7 @@ export default function QRCodeModal({ qrCode, onClose }) {
           className="bg-white p-6 rounded-lg flex flex-col items-center justify-center mb-6"
         >
           <QRCode
-            value={qrCode.codigo}
+            value={`https://bahiatrucks-davi.vercel.app/validar/${qrCode.codigo}`}
             size={300}
             level="H"
             includeMargin={true}
