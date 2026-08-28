@@ -223,13 +223,14 @@ exports.escanearPublico = async (req, res) => {
     }
 
     // Buscar ou criar cliente
-    let cliente = await Cliente.findOne({ email });
+    let cliente = await Cliente.findOne({ email, empresaId: qrCode.empresaId });
 
     if (!cliente) {
       cliente = new Cliente({
         nome,
         email,
         telefone: '',
+        empresaId: qrCode.empresaId,
         programasParticipantes: [
           {
             programaId: qrCode.programaId._id,
