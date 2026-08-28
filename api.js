@@ -270,6 +270,18 @@ export const recompensas = {
   }
 };
 
+// GOOGLE WALLET
+export const wallet = {
+  gerarCartao: async (clienteId, programaId) => {
+    const response = await fetch(`${API_URL}/wallet/gerar-cartao`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ clienteId, programaId })
+    });
+    return await response.json();
+  }
+};
+
 // Health check
 export const health = async () => {
   const response = await fetch(`${API_URL.replace('/api', '')}/api/health`);

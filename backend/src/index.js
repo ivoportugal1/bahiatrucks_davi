@@ -32,6 +32,7 @@ app.use('/api/programas', require('./routes/programa'));
 app.use('/api/clientes', require('./routes/cliente'));
 app.use('/api/qrcodes', require('./routes/qrcode'));
 app.use('/api/recompensas', require('./routes/recompensa'));
+app.use('/api/wallet', require('./routes/wallet'));
 
 // Middleware de erro
 app.use((err, req, res, next) => {
