@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader } from 'lucide-react';
+import { wallet } from './api';
+
+const styles = `
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+`;
 
 export default function ValidarQR({ codigoQR, onVoltar }) {
   const [dados, setDados] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
+  const [adicionandoCartao, setAdicionandoCartao] = useState(false);
 
   useEffect(() => {
     const carregarDados = async () => {
@@ -33,6 +41,22 @@ export default function ValidarQR({ codigoQR, onVoltar }) {
       carregarDados();
     }
   }, [codigoQR]);
+
+  const adicionarAoGoogleWallet = async () => {
+    setAdicionandoCartao(true);
+    try {
+      const resultado = await wallet.gerarLinkQRCode(codigoQR);
+      if (resultado.deepLink) {
+        window.location.href = resultado.deepLink;
+      } else {
+        alert('Erro: ' + (resultado.erro || 'Não foi possível gerar o link'));
+      }
+    } catch (err) {
+      alert('Erro ao adicionar ao Google Wallet: ' + err.message);
+    } finally {
+      setAdicionandoCartao(false);
+    }
+  };
 
   if (carregando) {
     return (
@@ -111,16 +135,18 @@ export default function ValidarQR({ codigoQR, onVoltar }) {
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '100vh',
-      background: 'linear-gradient(to bottom right, rgb(15, 23, 42), rgb(26, 58, 50), rgb(15, 23, 42))',
-      color: 'white',
-      padding: '20px'
-    }}>
+    <>
+      <style>{styles}</style>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        background: 'linear-gradient(to bottom right, rgb(15, 23, 42), rgb(26, 58, 50), rgb(15, 23, 42))',
+        color: 'white',
+        padding: '20px'
+      }}>
       {/* Header */}
       <div style={{
         width: '100%',
@@ -299,7 +325,39 @@ export default function ValidarQR({ codigoQR, onVoltar }) {
           </p>
         </div>
 
-        {/* CTA */}
+        {/* CTA - Google Wallet */}
+        <button
+          onClick={adicionarAoGoogleWallet}
+          disabled={adicionandoCartao}
+          style={{
+            width: '100%',
+            padding: '14px',
+            background: adicionandoCartao ? '#6b7280' : 'linear-gradient(to right, #5a9d7d, #4a8c6a)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '16px',
+            fontWeight: '600',
+            cursor: adicionandoCartao ? 'not-allowed' : 'pointer',
+            boxShadow: '0 4px 12px rgba(90, 157, 125, 0.3)',
+            marginBottom: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}
+        >
+          {adicionandoCartao ? (
+            <>
+              <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} />
+              Adicionando...
+            </>
+          ) : (
+            '📱 Adicionar ao Google Wallet'
+          )}
+        </button>
+
+        {/* CTA - Compartilhar */}
         <button
           onClick={() => {
             if (window.navigator.share) {
@@ -315,14 +373,13 @@ export default function ValidarQR({ codigoQR, onVoltar }) {
           style={{
             width: '100%',
             padding: '14px',
-            background: 'linear-gradient(to right, #5a9d7d, #4a8c6a)',
-            color: 'white',
-            border: 'none',
+            background: 'transparent',
+            color: '#5a9d7d',
+            border: '2px solid rgba(90, 157, 125, 0.3)',
             borderRadius: '8px',
             fontSize: '16px',
             fontWeight: '600',
-            cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(90, 157, 125, 0.3)'
+            cursor: 'pointer'
           }}
         >
           Compartilhar
@@ -344,6 +401,7 @@ export default function ValidarQR({ codigoQR, onVoltar }) {
           QR Code: {codigoQR}
         </p>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

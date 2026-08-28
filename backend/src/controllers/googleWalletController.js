@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const Cliente = require('../models/Cliente');
 const Programa = require('../models/Programa');
+const QRCode = require('../models/QRCode');
 
 const keyPath = path.join(__dirname, '../../google-wallet-key.json');
 const serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
@@ -198,6 +199,177 @@ exports.gerarCartao = async (req, res) => {
     console.error('Erro ao gerar cartão Google Wallet:', error);
     res.status(500).json({
       erro: error.message || 'Erro ao gerar cartão'
+    });
+  }
+};
+
+exports.gerarLinkQRCode = async (req, res) => {
+  try {
+    const { codigo } = req.params;
+
+    if (!codigo) {
+      return res.status(400).json({
+        erro: 'Código do QR Code é obrigatório'
+      });
+    }
+
+    const qrCode = await QRCode.findOne({ codigo });
+
+    if (!qrCode) {
+      return res.status(404).json({
+        erro: 'QR Code não encontrado'
+      });
+    }
+
+    let cliente = null;
+    if (qrCode.clienteId) {
+      cliente = await Cliente.findById(qrCode.clienteId);
+    } else {
+      // Se não tem cliente ainda, retornar erro
+      return res.status(400).json({
+        erro: 'QR Code não está associado a um cliente ainda'
+      });
+    }
+
+    const programa = await Programa.findById(qrCode.programaId);
+
+    if (!programa || !cliente) {
+      return res.status(404).json({
+        erro: 'Programa ou Cliente não encontrado'
+      });
+    }
+
+    const accessToken = await getAccessToken();
+
+    // IDs únicos
+    const classId = `${PROJECT_ID}.programa_${qrCode.programaId}`;
+    const objectId = `${PROJECT_ID}.cliente_${qrCode.clienteId}`;
+
+    // Criar classe se não existir
+    const classPayload = {
+      id: classId,
+      issuerName: 'Fidelizarei',
+      programName: programa.nome,
+      programLogo: {
+        sourceUri: {
+          uri: 'https://bahiatrucks-davi.vercel.app/logo.png'
+        }
+      },
+      rewardsTierLabel: 'Pontos',
+      reviewStatus: 'UNDER_REVIEW'
+    };
+
+    try {
+      await fetch(
+        `https://walletobjects.googleapis.com/walletobjects/v1/loyaltyClass/${classId}`,
+        {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${accessToken}` }
+        }
+      );
+    } catch (err) {
+      await fetch('https://walletobjects.googleapis.com/walletobjects/v1/loyaltyClass', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(classPayload)
+      });
+    }
+
+    // Criar objeto (cartão do cliente)
+    const pontos = cliente.programasParticipantes.find(
+      p => p.programaId.toString() === qrCode.programaId.toString()
+    )?.pontos || 0;
+
+    const objectPayload = {
+      id: objectId,
+      classId: classId,
+      state: 'ACTIVE',
+      heroImage: {
+        sourceUri: {
+          uri: 'https://bahiatrucks-davi.vercel.app/hero.png'
+        }
+      },
+      textModulesData: [
+        {
+          header: 'Cliente',
+          body: cliente.nome
+        }
+      ],
+      infoModuleData: {
+        labelValueRows: [
+          {
+            columns: [
+              {
+                label: 'Pontos',
+                value: pontos.toString()
+              },
+              {
+                label: 'Compras',
+                value: cliente.totalCompras.toString()
+              }
+            ]
+          }
+        ]
+      },
+      accountId: cliente._id.toString(),
+      accountDisplayName: cliente.nome,
+      loyaltyPoints: {
+        label: 'Pontos',
+        balance: {
+          int: pontos
+        }
+      }
+    };
+
+    const objectResponse = await fetch(
+      'https://walletobjects.googleapis.com/walletobjects/v1/loyaltyObject',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(objectPayload)
+      }
+    );
+
+    // Criar JWT para deep link
+    const deepLinkPayload = {
+      iss: ISSUER_ID,
+      aud: 'google',
+      typ: 'savetowallet',
+      origins: ['bahiatrucks-davi.vercel.app'],
+      payload: {
+        loyaltyObjects: [
+          {
+            id: objectId
+          }
+        ]
+      }
+    };
+
+    const deepLinkJwt = jwt.sign(deepLinkPayload, serviceAccount.private_key, {
+      algorithm: 'RS256',
+      header: {
+        typ: 'JWT',
+        kid: serviceAccount.private_key_id
+      }
+    });
+
+    const deepLink = `https://pay.google.com/gp/v/save/${deepLinkJwt}`;
+
+    res.json({
+      mensagem: 'Link gerado com sucesso!',
+      deepLink,
+      addToGoogleWalletLink: deepLink
+    });
+  } catch (error) {
+    console.error('Erro ao gerar link QR Code:', error);
+    res.status(500).json({
+      erro: error.message || 'Erro ao gerar link'
     });
   }
 };

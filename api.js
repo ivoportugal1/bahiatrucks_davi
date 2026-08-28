@@ -279,6 +279,11 @@ export const wallet = {
       body: JSON.stringify({ clienteId, programaId })
     });
     return await response.json();
+  },
+
+  gerarLinkQRCode: async (codigo) => {
+    const response = await fetch(`${API_URL}/wallet/link-qrcode/${codigo}`);
+    return await response.json();
   }
 };
 
