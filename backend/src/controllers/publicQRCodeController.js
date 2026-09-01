@@ -141,10 +141,6 @@ exports.joinProgram = async (req, res) => {
         pontosAtuais: 0,
         statusMembership: 'ativo'
       },
-      googleWallet: deepLink ? {
-        deepLink,
-        addToWalletLink: deepLink
-      } : null
     });
   } catch (error) {
     console.error('Erro ao aderir ao programa:', error);
@@ -235,43 +231,6 @@ exports.earnPoints = async (req, res) => {
     // Buscar dados do cliente para resposta
     const cliente = await Cliente.findById(clienteId);
 
-    // Gerar deep link Google Wallet (se credenciais estiverem configuradas)
-    let deepLink = null;
-    try {
-      if (process.env.GOOGLE_WALLET_KEY || fs.existsSync(path.join(__dirname, '../../google-wallet-key.json'))) {
-        let serviceAccount;
-        if (process.env.GOOGLE_WALLET_KEY) {
-          serviceAccount = JSON.parse(process.env.GOOGLE_WALLET_KEY);
-        } else {
-          const keyPath = path.join(__dirname, '../../google-wallet-key.json');
-          serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
-        }
-
-        const ISSUER_ID = '100243854108295429596';
-        const objectId = `${ISSUER_ID}.cliente_${clienteId}`;
-
-        const deepLinkPayload = {
-          iss: serviceAccount.client_email,
-          aud: 'google',
-          typ: 'savetowallet',
-          origins: ['bahiatrucks-davi.vercel.app'],
-          payload: {
-            loyaltyObjects: [{ id: objectId }]
-          }
-        };
-
-        deepLink = jwt.sign(deepLinkPayload, serviceAccount.private_key, {
-          algorithm: 'RS256',
-          header: {
-            typ: 'JWT',
-            kid: serviceAccount.private_key_id
-          }
-        });
-        deepLink = `https://pay.google.com/gp/v/save/${deepLink}`;
-      }
-    } catch (walletError) {
-      console.log('Google Wallet indisponível:', walletError.message);
-    }
 
     res.json({
       mensagem: 'Pontos adicionados com sucesso!',
@@ -289,10 +248,6 @@ exports.earnPoints = async (req, res) => {
         nome: programa?.nome,
         emoji: programa?.emoji
       },
-      googleWallet: deepLink ? {
-        deepLink,
-        addToWalletLink: deepLink
-      } : null
     });
   } catch (error) {
     console.error('Erro ao ganhar pontos:', error);

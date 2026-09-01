@@ -128,22 +128,12 @@ export default function JoinProgram({ codigoQR, onVoltar }) {
           <p className="text-sm text-gray-500 mb-6">
             Agora você pode ganhar pontos a cada compra!
           </p>
-          <div className="flex gap-3">
-            {googleWalletLink && (
-              <a
-                href={googleWalletLink}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition"
-              >
-                Adicionar à Carteira
-              </a>
-            )}
-            <button
-              onClick={onVoltar}
-              className={`${googleWalletLink ? 'flex-1' : 'w-full'} bg-[#5a9d7d] hover:bg-[#4a8c6a] text-white font-semibold py-2 px-4 rounded-lg transition`}
-            >
-              Fechar
-            </button>
-          </div>
+          <button
+            onClick={onVoltar}
+            className="w-full bg-[#5a9d7d] hover:bg-[#4a8c6a] text-white font-semibold py-2 px-4 rounded-lg transition"
+          >
+            Fechar
+          </button>
         </div>
       </div>
     );
