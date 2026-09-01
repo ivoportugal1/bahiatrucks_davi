@@ -8,14 +8,14 @@ const QRCode = require('../models/QRCode');
 const keyPath = path.join(__dirname, '../../google-wallet-key.json');
 const serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
 
-const ISSUER_ID = serviceAccount.client_email;
+const ISSUER_ID = '100243854108295429596';
 const PROJECT_ID = serviceAccount.project_id;
 
 async function getAccessToken() {
   const now = Math.floor(Date.now() / 1000);
   const payload = {
-    iss: ISSUER_ID,
-    sub: ISSUER_ID,
+    iss: serviceAccount.client_email,
+    sub: serviceAccount.client_email,
     aud: 'https://oauth2.googleapis.com/token',
     iat: now,
     exp: now + 3600,
@@ -64,8 +64,8 @@ exports.gerarCartao = async (req, res) => {
     const accessToken = await getAccessToken();
 
     // ID únicos para classe e objeto
-    const classId = `${PROJECT_ID}.programa_${programaId}`;
-    const objectId = `${PROJECT_ID}.cliente_${clienteId}`;
+    const classId = `${ISSUER_ID}.programa_${programaId}`;
+    const objectId = `${ISSUER_ID}.cliente_${clienteId}`;
 
     // Criar classe se não existir
     const classPayload = {
