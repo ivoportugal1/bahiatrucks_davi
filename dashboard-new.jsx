@@ -160,6 +160,7 @@ function ResumoPage() {
     qrcodes: 0,
     recompensas: 0
   });
+  const [atividades, setAtividades] = useState([]);
 
   useEffect(() => {
     const carregarDados = async () => {
@@ -176,6 +177,24 @@ function ResumoPage() {
           qrcodes: qr.total || 0,
           recompensas: rec.total || 0
         });
+
+        // Processar atividades recentes dos clientes
+        const atividadesProcessadas = [];
+        if (cli.clientes && cli.clientes.length > 0) {
+          cli.clientes.forEach(cliente => {
+            if (cliente.ultimaCompra) {
+              atividadesProcessadas.push({
+                name: cliente.nome,
+                action: 'ganhou ponto',
+                time: new Date(cliente.ultimaCompra),
+                points: cliente.totalCompras
+              });
+            }
+          });
+        }
+        // Ordenar por data mais recente e pegar só os 4 primeiros
+        atividadesProcessadas.sort((a, b) => b.time - a.time);
+        setAtividades(atividadesProcessadas.slice(0, 4));
       } catch (err) {
         console.error('Erro ao carregar dados:', err);
       }
@@ -256,28 +275,41 @@ function ResumoPage() {
           </button>
         </div>
         <div className="space-y-4">
-          {[
-            { name: 'Marina Costa', action: 'resgatou Café Grátis', time: '2 horas atrás', points: '+50' },
-            { name: 'João Silva', action: 'ganhou ponto', time: '4 horas atrás', points: '+1' },
-            { name: 'Pedro Almeida', action: 'resgatou Desconto 10%', time: '1 dia atrás', points: '+100' },
-            { name: 'Ana Santos', action: 'ganhou ponto', time: '1 dia atrás', points: '+1' }
-          ].map((activity, i) => (
-            <div key={i} className="flex justify-between items-center p-4 rounded-lg transition" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)'}}>
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm text-white" style={{background: `linear-gradient(to bottom right, ${moss.primary}, ${moss.secondary})`}}>
-                  {activity.name.split(' ')[0][0]}
-                </div>
-                <div>
-                  <div className="font-semibold">{activity.name}</div>
-                  <div className="text-xs text-gray-400">{activity.action}</div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-xs text-gray-400">{activity.time}</div>
-                <div className="font-semibold" style={{color: moss.primary}}>{activity.points}</div>
-              </div>
+          {atividades.length === 0 ? (
+            <div style={{textAlign: 'center', color: '#9ca3af', padding: '20px'}}>
+              Nenhuma atividade recente
             </div>
-          ))}
+          ) : (
+            atividades.map((activity, i) => {
+              const tempoRelativo = () => {
+                const agora = new Date();
+                const diff = agora - new Date(activity.time);
+                const horas = Math.floor(diff / 3600000);
+                const dias = Math.floor(diff / 86400000);
+                if (horas < 1) return 'agora';
+                if (horas < 24) return `${horas}h atrás`;
+                if (dias < 7) return `${dias}d atrás`;
+                return activity.time.toLocaleDateString('pt-BR');
+              };
+              return (
+                <div key={i} className="flex justify-between items-center p-4 rounded-lg transition" style={{backgroundColor: 'rgba(0, 0, 0, 0.3)'}}>
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm text-white" style={{background: `linear-gradient(to bottom right, ${moss.primary}, ${moss.secondary})`}}>
+                      {activity.name.split(' ')[0][0]}
+                    </div>
+                    <div>
+                      <div className="font-semibold">{activity.name}</div>
+                      <div className="text-xs text-gray-400">{activity.action}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs text-gray-400">{tempoRelativo()}</div>
+                    <div className="font-semibold" style={{color: moss.primary}}>+{activity.points}</div>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </div>
