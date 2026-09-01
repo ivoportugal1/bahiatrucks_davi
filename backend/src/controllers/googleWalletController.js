@@ -5,13 +5,27 @@ const Cliente = require('../models/Cliente');
 const Programa = require('../models/Programa');
 const QRCode = require('../models/QRCode');
 
-const keyPath = path.join(__dirname, '../../google-wallet-key.json');
-const serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
+let serviceAccount;
+try {
+  if (process.env.GOOGLE_WALLET_KEY) {
+    serviceAccount = JSON.parse(process.env.GOOGLE_WALLET_KEY);
+  } else {
+    const keyPath = path.join(__dirname, '../../google-wallet-key.json');
+    serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
+  }
+} catch (error) {
+  console.error('Erro ao carregar Google Wallet credentials:', error.message);
+  serviceAccount = null;
+}
 
 const ISSUER_ID = '100243854108295429596';
 const PROJECT_ID = serviceAccount.project_id;
 
 async function getAccessToken() {
+  if (!serviceAccount) {
+    throw new Error('Google Wallet credentials not configured. Set GOOGLE_WALLET_KEY environment variable.');
+  }
+
   const now = Math.floor(Date.now() / 1000);
   const payload = {
     iss: serviceAccount.client_email,
