@@ -157,8 +157,16 @@ exports.gerarCartao = async (req, res) => {
       }
     );
 
+    const objectData = await objectResponse.json();
+
     if (!objectResponse.ok) {
-      throw new Error('Erro ao criar objeto no Google Wallet');
+      console.error('Erro do Google Wallet:', {
+        status: objectResponse.status,
+        statusText: objectResponse.statusText,
+        data: objectData,
+        payload: objectPayload
+      });
+      throw new Error(`Erro Google Wallet ${objectResponse.status}: ${objectData.error?.message || JSON.stringify(objectData)}`);
     }
 
     // Criar JWT para deep link
@@ -333,6 +341,18 @@ exports.gerarLinkQRCode = async (req, res) => {
         body: JSON.stringify(objectPayload)
       }
     );
+
+    const objectData = await objectResponse.json();
+
+    if (!objectResponse.ok) {
+      console.error('Erro do Google Wallet (gerarLinkQRCode):', {
+        status: objectResponse.status,
+        statusText: objectResponse.statusText,
+        data: objectData,
+        payload: objectPayload
+      });
+      throw new Error(`Erro Google Wallet ${objectResponse.status}: ${objectData.error?.message || JSON.stringify(objectData)}`);
+    }
 
     // Criar JWT para deep link
     const deepLinkPayload = {
