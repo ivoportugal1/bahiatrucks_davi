@@ -6,12 +6,18 @@ const crypto = require('crypto');
 // Gerar QR Codes em lote
 exports.gerarLote = async (req, res) => {
   try {
-    const { programaId, quantidade } = req.body;
+    const { programaId, quantidade, tipo = 'pontuacao' } = req.body;
     const empresaId = req.user.id;
 
     if (!programaId || !quantidade || quantidade < 1) {
       return res.status(400).json({
         erro: 'programaId e quantidade são obrigatórios'
+      });
+    }
+
+    if (!['adesao', 'pontuacao'].includes(tipo)) {
+      return res.status(400).json({
+        erro: 'tipo deve ser "adesao" ou "pontuacao"'
       });
     }
 
@@ -33,6 +39,7 @@ exports.gerarLote = async (req, res) => {
         programaId,
         codigo,
         lote: loteId,
+        tipo,
       });
     }
 

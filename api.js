@@ -163,11 +163,11 @@ export const clientes = {
 
 // QR CODES
 export const qrCodes = {
-  gerarLote: async (programaId, quantidade) => {
+  gerarLote: async (programaId, quantidade, tipo = 'pontuacao') => {
     const response = await fetch(`${API_URL}/qrcodes/gerar-lote`, {
       method: 'POST',
       headers: getHeaders(),
-      body: JSON.stringify({ programaId, quantidade })
+      body: JSON.stringify({ programaId, quantidade, tipo })
     });
     return await response.json();
   },
@@ -199,6 +199,24 @@ export const qrCodes = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ codigo, nome, email })
+    });
+    return await response.json();
+  },
+
+  join: async (codigo, nome, email) => {
+    const response = await fetch(`${API_URL}/qrcodes/join`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ codigo, nome, email })
+    });
+    return await response.json();
+  },
+
+  earn: async (codigo) => {
+    const response = await fetch(`${API_URL}/qrcodes/earn`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ codigo })
     });
     return await response.json();
   },

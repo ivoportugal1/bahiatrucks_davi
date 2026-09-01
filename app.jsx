@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Landing from './landing';
 import Dashboard from './dashboard-new';
 import ValidarQR from './validar-qr';
+import JoinProgram from './JoinProgram';
+import EarnPoints from './EarnPoints';
 import { auth } from './api';
 
 export default function App() {
@@ -11,9 +13,27 @@ export default function App() {
   const [erro, setErro] = useState(null);
   const [codigoQR, setCodigoQR] = useState(null);
 
-  // Verificar se está em rota /validar/:codigo
+  // Verificar se está em rota /validar/:codigo, /join/:codigo ou /earn/:codigo
   useEffect(() => {
     const pathname = window.location.pathname;
+    if (pathname.startsWith('/join/')) {
+      const codigo = pathname.replace('/join/', '');
+      if (codigo) {
+        setCodigoQR(codigo);
+        setCurrentPage('join');
+        setCarregando(false);
+        return;
+      }
+    }
+    if (pathname.startsWith('/earn/')) {
+      const codigo = pathname.replace('/earn/', '');
+      if (codigo) {
+        setCodigoQR(codigo);
+        setCurrentPage('earn');
+        setCarregando(false);
+        return;
+      }
+    }
     if (pathname.startsWith('/validar/')) {
       const codigo = pathname.replace('/validar/', '');
       if (codigo) {
@@ -103,6 +123,24 @@ export default function App() {
 
   return (
     <>
+      {currentPage === 'join' && codigoQR && (
+        <JoinProgram
+          codigoQR={codigoQR}
+          onVoltar={() => {
+            window.location.href = '/';
+          }}
+        />
+      )}
+
+      {currentPage === 'earn' && codigoQR && (
+        <EarnPoints
+          codigoQR={codigoQR}
+          onVoltar={() => {
+            window.location.href = '/';
+          }}
+        />
+      )}
+
       {currentPage === 'validar' && codigoQR && (
         <ValidarQR
           codigoQR={codigoQR}

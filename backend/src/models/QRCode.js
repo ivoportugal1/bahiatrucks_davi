@@ -40,6 +40,11 @@ const qrCodeSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    tipo: {
+      type: String,
+      enum: ['adesao', 'pontuacao'],
+      default: 'pontuacao',
+    },
   },
   { timestamps: true }
 );

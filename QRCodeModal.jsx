@@ -6,6 +6,16 @@ import { X, Download } from 'lucide-react';
 export default function QRCodeModal({ qrCode, onClose }) {
   const qrRef = useRef();
 
+  const getQRUrl = () => {
+    const baseUrl = 'https://bahiatrucks-davi.vercel.app';
+    if (qrCode.tipo === 'adesao') {
+      return `${baseUrl}/join/${qrCode.codigo}`;
+    } else if (qrCode.tipo === 'pontuacao') {
+      return `${baseUrl}/earn/${qrCode.codigo}`;
+    }
+    return `${baseUrl}/validar/${qrCode.codigo}`;
+  };
+
   const downloadPDF = () => {
     const element = qrRef.current;
     const options = {
@@ -23,7 +33,12 @@ export default function QRCodeModal({ qrCode, onClose }) {
       <div className="bg-white rounded-lg p-8 max-w-md w-full">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">QR Code</h2>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">QR Code</h2>
+            <p className="text-xs text-gray-500 mt-1">
+              {qrCode.tipo === 'adesao' ? '🎁 Adesão' : '⭐ Pontuação'}
+            </p>
+          </div>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
@@ -38,7 +53,7 @@ export default function QRCodeModal({ qrCode, onClose }) {
           className="bg-white p-6 rounded-lg flex flex-col items-center justify-center mb-6"
         >
           <QRCode
-            value={`https://bahiatrucks-davi.vercel.app/validar/${qrCode.codigo}`}
+            value={getQRUrl()}
             size={300}
             level="H"
             includeMargin={true}

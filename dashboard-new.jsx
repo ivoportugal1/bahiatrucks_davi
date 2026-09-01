@@ -582,7 +582,8 @@ function QRCodesPage() {
   const [selectedQR, setSelectedQR] = useState(null);
   const [form, setForm] = useState({
     programaId: '',
-    quantidade: 100
+    quantidade: 100,
+    tipo: 'pontuacao'
   });
   const [listaProgramas, setListaProgramas] = useState([]);
 
@@ -614,9 +615,9 @@ function QRCodesPage() {
       return;
     }
     try {
-      await apiQRCodes.gerarLote(form.programaId, form.quantidade);
+      await apiQRCodes.gerarLote(form.programaId, form.quantidade, form.tipo);
       setMostraForm(false);
-      setForm({ programaId: '', quantidade: 100 });
+      setForm({ programaId: '', quantidade: 100, tipo: 'pontuacao' });
       await carregarDados();
       alert(`${form.quantidade} QR Codes gerados com sucesso!`);
     } catch (err) {
@@ -650,6 +651,14 @@ function QRCodesPage() {
               {listaProgramas.map((p) => (
                 <option key={p._id} value={p._id}>{p.nome}</option>
               ))}
+            </select>
+            <select
+              value={form.tipo}
+              onChange={(e) => setForm({...form, tipo: e.target.value})}
+              style={{width: '100%', padding: '10px', background: 'rgba(0,0,0,0.3)', border: `1px solid ${moss.border}`, borderRadius: '8px', color: 'white'}}
+            >
+              <option value="pontuacao">⭐ QR de Pontuação</option>
+              <option value="adesao">🎁 QR de Adesão</option>
             </select>
             <input
               type="number"
