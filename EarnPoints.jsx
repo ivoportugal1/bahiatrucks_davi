@@ -110,6 +110,8 @@ export default function EarnPoints({ codigoQR, onVoltar }) {
   }
 
   if (sucesso) {
+    const googleWalletLink = dados?.googleWallet?.deepLink;
+
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-8 max-w-md w-full text-center">
@@ -127,12 +129,23 @@ export default function EarnPoints({ codigoQR, onVoltar }) {
           <p className="text-sm text-gray-600 mb-6">
             Compras: {dados?.membership?.comprasRealizadas}
           </p>
-          <button
-            onClick={onVoltar}
-            className="w-full bg-[#5a9d7d] hover:bg-[#4a8c6a] text-white font-semibold py-2 px-4 rounded-lg transition"
-          >
-            Fechar
-          </button>
+
+          <div className="flex gap-3">
+            {googleWalletLink && (
+              <a
+                href={googleWalletLink}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition"
+              >
+                Adicionar à Carteira
+              </a>
+            )}
+            <button
+              onClick={onVoltar}
+              className={`${googleWalletLink ? 'flex-1' : 'w-full'} bg-[#5a9d7d] hover:bg-[#4a8c6a] text-white font-semibold py-2 px-4 rounded-lg transition`}
+            >
+              Fechar
+            </button>
+          </div>
         </div>
       </div>
     );

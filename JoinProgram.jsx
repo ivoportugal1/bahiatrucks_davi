@@ -110,6 +110,8 @@ export default function JoinProgram({ codigoQR, onVoltar }) {
   }
 
   if (sucesso) {
+    const googleWalletLink = dados?.googleWallet?.deepLink;
+
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-8 max-w-md w-full text-center">
@@ -126,12 +128,22 @@ export default function JoinProgram({ codigoQR, onVoltar }) {
           <p className="text-sm text-gray-500 mb-6">
             Agora você pode ganhar pontos a cada compra!
           </p>
-          <button
-            onClick={onVoltar}
-            className="w-full bg-[#5a9d7d] hover:bg-[#4a8c6a] text-white font-semibold py-2 px-4 rounded-lg transition"
-          >
-            Fechar
-          </button>
+          <div className="flex gap-3">
+            {googleWalletLink && (
+              <a
+                href={googleWalletLink}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition"
+              >
+                Adicionar à Carteira
+              </a>
+            )}
+            <button
+              onClick={onVoltar}
+              className={`${googleWalletLink ? 'flex-1' : 'w-full'} bg-[#5a9d7d] hover:bg-[#4a8c6a] text-white font-semibold py-2 px-4 rounded-lg transition`}
+            >
+              Fechar
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -144,9 +156,11 @@ export default function JoinProgram({ codigoQR, onVoltar }) {
 
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">
-            {dados?.programa?.emoji} {dados?.programa?.nome}
-          </h2>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">
+              {dados?.programa?.emoji} {dados?.programa?.nome}
+            </h2>
+          </div>
           <button
             onClick={onVoltar}
             className="text-gray-500 hover:text-gray-700"
