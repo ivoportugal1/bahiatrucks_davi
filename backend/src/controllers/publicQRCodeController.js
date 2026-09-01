@@ -112,7 +112,7 @@ exports.joinProgram = async (req, res) => {
 // Ganhar pontos (apenas para membros ativos)
 exports.earnPoints = async (req, res) => {
   try {
-    const { codigo } = req.body;
+    const { codigo, email } = req.body;
 
     if (!codigo) {
       return res.status(400).json({
@@ -140,15 +140,24 @@ exports.earnPoints = async (req, res) => {
       });
     }
 
-    if (!qrCode.clienteId) {
+    // Se o QR não está vinculado, usa email para identificar cliente
+    let clienteId = qrCode.clienteId;
+    if (!clienteId && email) {
+      const cliente = await Cliente.findOne({ email, empresaId: qrCode.empresaId._id });
+      if (cliente) {
+        clienteId = cliente._id;
+      }
+    }
+
+    if (!clienteId) {
       return res.status(400).json({
-        erro: 'Este QR Code ainda não está vinculado a um cliente'
+        erro: 'Email é obrigatório para ganhar pontos'
       });
     }
 
     // Verificar se cliente é membro ativo
     const membership = await LoyaltyMembership.findOne({
-      clienteId: qrCode.clienteId,
+      clienteId: clienteId,
       programaId: qrCode.programaId._id,
       statusMembership: 'ativo'
     });
@@ -179,7 +188,7 @@ exports.earnPoints = async (req, res) => {
     }
 
     // Buscar dados do cliente para resposta
-    const cliente = await Cliente.findById(qrCode.clienteId);
+    const cliente = await Cliente.findById(clienteId);
 
     res.json({
       mensagem: 'Pontos adicionados com sucesso!',

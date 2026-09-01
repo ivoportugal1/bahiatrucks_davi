@@ -212,11 +212,11 @@ export const qrCodes = {
     return await response.json();
   },
 
-  earn: async (codigo) => {
+  earn: async (codigo, email) => {
     const response = await fetch(`${API_URL}/qrcodes/earn`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ codigo })
+      body: JSON.stringify({ codigo, email })
     });
     return await response.json();
   },

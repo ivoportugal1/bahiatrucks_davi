@@ -15,6 +15,7 @@ export default function EarnPoints({ codigoQR, onVoltar }) {
   const [processando, setProcessando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
   const [pontoGanho, setPontoGanho] = useState(0);
+  const [email, setEmail] = useState('');
 
   useEffect(() => {
     const carregarDados = async () => {
@@ -45,9 +46,14 @@ export default function EarnPoints({ codigoQR, onVoltar }) {
   }, [codigoQR]);
 
   const ganharPontos = async () => {
+    if (!email) {
+      setErro('Email é obrigatório');
+      return;
+    }
+
     setProcessando(true);
     try {
-      const resultado = await qrCodes.earn(codigoQR);
+      const resultado = await qrCodes.earn(codigoQR, email);
 
       if (resultado.pontosGanhos) {
         setPontoGanho(resultado.pontosGanhos);
@@ -156,6 +162,21 @@ export default function EarnPoints({ codigoQR, onVoltar }) {
           <p className="text-blue-700 text-sm mt-2">
             {dados?.programa?.nome} - Esta compra vale pontos
           </p>
+        </div>
+
+        {/* Email Field */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Email (para identificar você)
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="seu@email.com"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5a9d7d]"
+            required
+          />
         </div>
 
         {/* Confirmação */}
