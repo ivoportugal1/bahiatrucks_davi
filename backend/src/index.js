@@ -11,8 +11,22 @@ connectDB();
 
 // Middlewares
 app.use(cors({
-  origin: ['https://bahiatrucks-davi.vercel.app', 'http://localhost:3000'],
-  credentials: true
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'https://bahiatrucks-davi.vercel.app',
+      'http://localhost:3000',
+      'http://localhost:3001'
+    ];
+
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
