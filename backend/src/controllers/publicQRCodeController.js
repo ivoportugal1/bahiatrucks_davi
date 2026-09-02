@@ -2,9 +2,7 @@ const Cliente = require('../models/Cliente');
 const Programa = require('../models/Programa');
 const QRCode = require('../models/QRCode');
 const LoyaltyMembership = require('../models/LoyaltyMembership');
-const jwt = require('jsonwebtoken');
-const fs = require('fs');
-const path = require('path');
+const { criarCartaoFidel } = require('./fidelController');
 
 // Adesão ao programa (criar membership)
 exports.joinProgram = async (req, res) => {
@@ -87,54 +85,8 @@ exports.joinProgram = async (req, res) => {
       await programa.save();
     }
 
-    // Gerar deep link Google Wallet (se credenciais estiverem configuradas)
-    let deepLink = null;
-    try {
-      const hasEnvKey = !!process.env.GOOGLE_WALLET_KEY;
-      const hasFileKey = fs.existsSync(path.join(__dirname, '../../google-wallet-key.json'));
-      console.log(`[WALLET] Verificando credentials: ENV=${hasEnvKey}, FILE=${hasFileKey}`);
-
-      if (hasEnvKey || hasFileKey) {
-        let serviceAccount;
-        if (process.env.GOOGLE_WALLET_KEY) {
-          console.log('[WALLET] Lendo de variável de ambiente GOOGLE_WALLET_KEY');
-          serviceAccount = JSON.parse(process.env.GOOGLE_WALLET_KEY);
-        } else {
-          console.log('[WALLET] Lendo de arquivo google-wallet-key.json');
-          const keyPath = path.join(__dirname, '../../google-wallet-key.json');
-          serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
-        }
-
-        console.log(`[WALLET] Service account carregado: ${serviceAccount.client_email}`);
-        const ISSUER_ID = '100243854108295429596';
-        const objectId = `${ISSUER_ID}.cliente_${cliente._id}`;
-        console.log(`[WALLET] Gerando deep link com objectId: ${objectId}`);
-
-        const deepLinkPayload = {
-          iss: serviceAccount.client_email,
-          aud: 'google',
-          typ: 'savetowallet',
-          origins: ['bahiatrucks-davi.vercel.app'],
-          payload: {
-            loyaltyObjects: [{ id: objectId }]
-          }
-        };
-
-        deepLink = jwt.sign(deepLinkPayload, serviceAccount.private_key, {
-          algorithm: 'RS256',
-          header: {
-            typ: 'JWT',
-            kid: serviceAccount.private_key_id
-          }
-        });
-        deepLink = `https://pay.google.com/gp/v/save/${deepLink}`;
-        console.log('[WALLET] Deep link gerado com sucesso!');
-      } else {
-        console.log('[WALLET] ⚠️  Nenhuma credential encontrada (ENV ou FILE)');
-      }
-    } catch (walletError) {
-      console.error('[WALLET] ❌ Erro ao gerar deep link:', walletError.message);
-    }
+    // Gerar cartão Fidel
+    const fidelLink = await criarCartaoFidel(cliente, programa, membership);
 
     res.json({
       mensagem: 'Bem-vindo ao programa! Agora você pode ganhar pontos.',
@@ -152,9 +104,9 @@ exports.joinProgram = async (req, res) => {
         pontosAtuais: 0,
         statusMembership: 'ativo'
       },
-      googleWallet: deepLink ? {
-        deepLink,
-        addToWalletLink: deepLink
+      fidelWallet: fidelLink ? {
+        walletLink: fidelLink,
+        addToWalletLink: fidelLink
       } : null
     });
   } catch (error) {
@@ -246,55 +198,6 @@ exports.earnPoints = async (req, res) => {
     // Buscar dados do cliente para resposta
     const cliente = await Cliente.findById(clienteId);
 
-    // Gerar deep link Google Wallet (se credenciais estiverem configuradas)
-    let deepLink = null;
-    try {
-      const hasEnvKey = !!process.env.GOOGLE_WALLET_KEY;
-      const hasFileKey = fs.existsSync(path.join(__dirname, '../../google-wallet-key.json'));
-      console.log(`[WALLET] Verificando credentials: ENV=${hasEnvKey}, FILE=${hasFileKey}`);
-
-      if (hasEnvKey || hasFileKey) {
-        let serviceAccount;
-        if (process.env.GOOGLE_WALLET_KEY) {
-          console.log('[WALLET] Lendo de variável de ambiente GOOGLE_WALLET_KEY');
-          serviceAccount = JSON.parse(process.env.GOOGLE_WALLET_KEY);
-        } else {
-          console.log('[WALLET] Lendo de arquivo google-wallet-key.json');
-          const keyPath = path.join(__dirname, '../../google-wallet-key.json');
-          serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
-        }
-
-        console.log(`[WALLET] Service account carregado: ${serviceAccount.client_email}`);
-        const ISSUER_ID = '100243854108295429596';
-        const objectId = `${ISSUER_ID}.cliente_${clienteId}`;
-        console.log(`[WALLET] Gerando deep link com objectId: ${objectId}`);
-
-        const deepLinkPayload = {
-          iss: serviceAccount.client_email,
-          aud: 'google',
-          typ: 'savetowallet',
-          origins: ['bahiatrucks-davi.vercel.app'],
-          payload: {
-            loyaltyObjects: [{ id: objectId }]
-          }
-        };
-
-        deepLink = jwt.sign(deepLinkPayload, serviceAccount.private_key, {
-          algorithm: 'RS256',
-          header: {
-            typ: 'JWT',
-            kid: serviceAccount.private_key_id
-          }
-        });
-        deepLink = `https://pay.google.com/gp/v/save/${deepLink}`;
-        console.log('[WALLET] Deep link gerado com sucesso!');
-      } else {
-        console.log('[WALLET] ⚠️  Nenhuma credential encontrada (ENV ou FILE)');
-      }
-    } catch (walletError) {
-      console.error('[WALLET] ❌ Erro ao gerar deep link:', walletError.message);
-    }
-
     res.json({
       mensagem: 'Pontos adicionados com sucesso!',
       pontosGanhos,
@@ -311,9 +214,9 @@ exports.earnPoints = async (req, res) => {
         nome: programa?.nome,
         emoji: programa?.emoji
       },
-      googleWallet: deepLink ? {
-        deepLink,
-        addToWalletLink: deepLink
+      fidelWallet: fidelLink ? {
+        walletLink: fidelLink,
+        addToWalletLink: fidelLink
       } : null
     });
   } catch (error) {
