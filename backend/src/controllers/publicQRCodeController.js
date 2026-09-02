@@ -213,11 +213,7 @@ exports.earnPoints = async (req, res) => {
       programa: {
         nome: programa?.nome,
         emoji: programa?.emoji
-      },
-      fidelWallet: fidelLink ? {
-        walletLink: fidelLink,
-        addToWalletLink: fidelLink
-      } : null
+      }
     });
   } catch (error) {
     console.error('Erro ao ganhar pontos:', error);
